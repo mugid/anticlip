@@ -10,97 +10,38 @@
     <main class="shell">
       <header class="topbar">
         <div class="brand">
-          <img src="icons/icon.svg" alt="" class="brand-icon" />
-          <span>AntiClip</span>
+          <img src="icons/logo.svg" alt="AntiClip" class="brand-logo" />
         </div>
         <button class="toggle" type="button" data-toggle aria-pressed="true">On</button>
       </header>
 
-      <section class="search" aria-label="Current rule">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="m21 21-4.34-4.34" />
-          <circle cx="11" cy="11" r="7" />
-        </svg>
-        <span>youtube.com</span>
-      </section>
-
-      <section class="card">
-        <div class="suggestion">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M12 3l1.2 5.1L18 10l-4.8 1.9L12 17l-1.2-5.1L6 10l4.8-1.9L12 3Z" />
-            <path d="M5 14l.6 2.4L8 17l-2.4.6L5 20l-.6-2.4L2 17l2.4-.6L5 14Z" />
-          </svg>
-          <span>Playback rule</span>
+      <section class="group" aria-label="Playback speed">
+        <div class="group-head">
+          <span>Speed multiplier</span>
+          <span class="value" data-actual-rate>0.5x</span>
         </div>
-
-        <div class="profile">
-          <div class="avatar">½</div>
-          <div>
-            <h1>Half-speed layer</h1>
-            <p data-status>Active on YouTube</p>
-          </div>
-        </div>
-
-        <dl class="details">
-          <div>
-            <dt>
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M4 6h16v12H4z" />
-                <path d="m4 8 8 5 8-5" />
-              </svg>
-              YouTube shows
-            </dt>
-            <dd>unchanged</dd>
-          </div>
-          <div>
-            <dt>
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M4 12h16" />
-                <path d="M12 4v16" />
-                <path d="M7 7h10v10H7z" />
-              </svg>
-              Real speed
-            </dt>
-            <dd><span class="pill" data-actual-rate>0.5x</span></dd>
-          </div>
-          <div>
-            <dt>
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="8" />
-                <path d="M12 8v5l3 2" />
-              </svg>
-              Example
-            </dt>
-            <dd>2x becomes 1x</dd>
-          </div>
-        </dl>
-
         <div class="segments" aria-label="Speed multiplier">
-          <button type="button" data-multiplier="0.25">¼</button>
-          <button type="button" data-multiplier="0.5" aria-pressed="true">½</button>
-          <button type="button" data-multiplier="0.75">¾</button>
+          <button type="button" data-multiplier="0.25">0.25</button>
+          <button type="button" data-multiplier="0.5" aria-pressed="true">0.5</button>
+          <button type="button" data-multiplier="0.75">0.75</button>
           <button type="button" data-multiplier="1">1</button>
         </div>
       </section>
 
-      <section class="related" aria-label="YouTube cleanup">
-        <h2>YouTube cleanup</h2>
+      <section class="group" aria-label="YouTube cleanup">
         <button class="row feature-row" type="button" data-feature="hideRecommendations" aria-pressed="false">
-          <span class="dot">
+          <span class="row-icon">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M4 6h16" />
               <path d="M4 12h10" />
               <path d="M4 18h7" />
             </svg>
           </span>
-          <div>
-            <strong>Watch recommendations</strong>
-            <small>Hide next-video sidebar</small>
-          </div>
+          <strong>Watch recommendations</strong>
           <span class="switch" aria-hidden="true"></span>
         </button>
         <button class="row feature-row" type="button" data-feature="hideHomeRecommendations" aria-pressed="false">
-          <span class="dot">
+          <span class="row-icon">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M4 5h7v6H4z" />
               <path d="M13 5h7v6h-7z" />
@@ -108,50 +49,38 @@
               <path d="M13 13h7v6h-7z" />
             </svg>
           </span>
-          <div>
-            <strong>Home feed</strong>
-            <small>Hide home recommendations</small>
-          </div>
+          <strong>Home feed</strong>
           <span class="switch" aria-hidden="true"></span>
         </button>
         <button class="row feature-row" type="button" data-feature="hideComments" aria-pressed="false">
-          <span class="dot muted">
+          <span class="row-icon">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M5 6h14v10H8l-3 3V6Z" />
               <path d="M9 10h6" />
               <path d="M9 13h4" />
             </svg>
           </span>
-          <div>
-            <strong>Comments</strong>
-            <small>Remove comment sections</small>
-          </div>
+          <strong>Comments</strong>
           <span class="switch" aria-hidden="true"></span>
         </button>
         <button class="row feature-row" type="button" data-feature="hideShorts" aria-pressed="false">
-          <span class="dot teal">
+          <span class="row-icon">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="m9 7 7 5-7 5V7Z" />
               <rect x="5" y="3" width="14" height="18" rx="4" />
             </svg>
           </span>
-          <div>
-            <strong>Shorts</strong>
-            <small>Hide Shorts links and shelves</small>
-          </div>
+          <strong>Shorts</strong>
           <span class="switch" aria-hidden="true"></span>
         </button>
         <button class="row feature-row" type="button" data-feature="disableAutoplay" aria-pressed="false">
-          <span class="dot green">
+          <span class="row-icon">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M7 5v14" />
               <path d="M17 5v14" />
             </svg>
           </span>
-          <div>
-            <strong>Autoplay</strong>
-            <small>Turn off next-video autoplay</small>
-          </div>
+          <strong>Autoplay</strong>
           <span class="switch" aria-hidden="true"></span>
         </button>
       </section>
