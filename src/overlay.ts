@@ -69,10 +69,11 @@
 
     const masterToggle = panel.querySelector<HTMLButtonElement>("[data-toggle]");
     const rate = panel.querySelector<HTMLElement>("[data-actual-rate]");
+    const segments = panel.querySelector<HTMLElement>(".segments");
 
     if (masterToggle) {
-      masterToggle.textContent = config.enabled ? "On" : "Off";
       masterToggle.setAttribute("aria-pressed", String(config.enabled));
+      masterToggle.setAttribute("aria-label", config.enabled ? "Turn AntiClip off" : "Turn AntiClip on");
     }
 
     if (rate) {
@@ -86,6 +87,9 @@
       );
     });
 
+    const multiplierIndex = [0.25, 0.5, 0.75, 1].indexOf(config.multiplier);
+    segments?.style.setProperty("--selected-index", String(Math.max(multiplierIndex, 0)));
+
     panel.querySelectorAll<HTMLButtonElement>("[data-feature]").forEach((button) => {
       const feature = button.dataset.feature as keyof AntiClipConfig;
       button.setAttribute("aria-pressed", String(Boolean(config[feature])));
@@ -94,7 +98,11 @@
 
   function save(nextConfig: AntiClipConfig) {
     config = nextConfig;
-    chrome.storage.sync.set({ [STORAGE_KEY]: config }, render);
+    try {
+      chrome.storage.sync.set({ [STORAGE_KEY]: config }, render);
+    } catch {
+      closeOverlay();
+    }
   }
 
   function closeOverlay() {
@@ -120,13 +128,26 @@
       <button class="row feature-row" type="button" data-feature="${feature}" aria-pressed="false">
         <span class="row-icon"><svg aria-hidden="true" viewBox="0 0 24 24">${icon}</svg></span>
         <strong>${label}</strong>
-        <span class="switch" aria-hidden="true"></span>
+        <span class="switch" aria-hidden="true">
+          <svg viewBox="0 0 20 20">
+            <path class="switch-check" d="m5.5 10.2 3 3.1 6-6.4" />
+            <path class="switch-off" d="m6.5 6.5 7 7m0-7-7 7" />
+          </svg>
+        </span>
       </button>
     `).join("");
   }
 
   function openOverlay() {
     if (host || document.getElementById(HOST_ID)) {
+      return;
+    }
+
+    let logoUrl: string;
+
+    try {
+      logoUrl = chrome.runtime.getURL("icons/logo.svg");
+    } catch {
       return;
     }
 
@@ -159,37 +180,56 @@
         button { font: inherit; }
         .topbar { display: flex; align-items: center; justify-content: space-between; height: 34px; margin-bottom: 10px; }
         .logo { display: block; width: 89px; height: auto; }
-        .toggle { min-width: 52px; height: 30px; border: 1px solid #e4e6eb; border-radius: 999px; background: #17181c; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .toggle[aria-pressed="false"] { background: #fff; color: #6d7078; }
+        .toggle { position: relative; min-width: 52px; height: 30px; overflow: hidden; border: 1px solid #dfe2e8; border-radius: 999px; background: #fff; color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: transform 140ms cubic-bezier(.23,1,.32,1); }
+        .toggle:active { transform: scale(.97); }
+        .toggle-fill { position: absolute; inset: 0; background: #17181c; clip-path: inset(0 0 0 0); transition: clip-path 240ms cubic-bezier(.77,0,.175,1); }
+        .toggle[aria-pressed="false"] .toggle-fill { clip-path: inset(100% 0 0 0); }
+        .toggle-label { position: absolute; z-index: 1; inset: 0; display: grid; place-items: center; transition: opacity 160ms ease, transform 200ms cubic-bezier(.23,1,.32,1), filter 160ms ease; }
+        .toggle-label-on { color: #fff; opacity: 1; transform: translateY(0); }
+        .toggle-label-off { color: #6d7078; opacity: 0; transform: translateY(-5px); filter: blur(2px); }
+        .toggle[aria-pressed="false"] .toggle-label-on { opacity: 0; transform: translateY(5px); filter: blur(2px); }
+        .toggle[aria-pressed="false"] .toggle-label-off { opacity: 1; transform: translateY(0); filter: none; }
         .group { padding: 12px; border: 1px solid #e4e6eb; border-radius: 20px; background: #fbfbfc; }
         .group + .group { margin-top: 10px; }
         .group-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: #6d7078; font-size: 13px; font-weight: 500; }
         .value { color: #245bd8; font-weight: 600; }
-        .segments { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-        .segments button { height: 36px; border: 1px solid #e4e6eb; border-radius: 12px; background: #fff; color: #555963; cursor: pointer; font-size: 14px; font-weight: 500; }
-        .segments button[aria-pressed="true"] { border-color: #245bd8; background: #386de8; color: #fff; box-shadow: 0 8px 16px rgb(56 109 232 / 22%); }
-        .row { display: grid; grid-template-columns: 28px 1fr 36px; gap: 10px; align-items: center; width: 100%; height: 42px; padding: 0; border: 0; border-radius: 13px; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+        .segments { --selected-index: 1; position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+        .segment-indicator { position: absolute; z-index: -1; top: 0; left: 0; width: calc((100% - 21px) / 4); height: 36px; border-radius: 12px; background: #386de8; box-shadow: 0 8px 16px rgb(56 109 232 / 22%); transform: translateX(calc(var(--selected-index) * (100% + 7px))); transition: transform 220ms cubic-bezier(.77,0,.175,1); }
+        .segments button { position: relative; height: 36px; border: 1px solid #e4e6eb; border-radius: 12px; background: transparent; color: #555963; cursor: pointer; font-size: 14px; font-weight: 500; transition: color 150ms ease, border-color 150ms ease, transform 120ms cubic-bezier(.23,1,.32,1); }
+        .segments button:active { transform: scale(.96); }
+        .segments button[aria-pressed="true"] { border-color: transparent; color: #fff; }
+        .row { display: grid; grid-template-columns: 28px 1fr 32px; gap: 10px; align-items: center; width: 100%; height: 42px; padding: 0; border: 0; border-radius: 13px; background: transparent; color: inherit; text-align: left; cursor: pointer; transition: transform 120ms cubic-bezier(.23,1,.32,1); }
+        .row:active { transform: scale(.985); }
         .row + .row { margin-top: 3px; }
         .row-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: #f3f4f7; color: #656a74; }
         .row-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
         .row strong { min-width: 0; overflow: hidden; color: #17181c; font-size: 14px; font-weight: 500; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
         .feature-row[aria-pressed="true"] .row-icon { background: #eaf0ff; color: #245bd8; }
-        .switch { position: relative; width: 36px; height: 22px; border-radius: 999px; background: #d9dce3; transition: background 160ms ease; }
-        .switch::after { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgb(23 24 28 / 18%); content: ""; transition: transform 160ms ease; }
-        .feature-row[aria-pressed="true"] .switch { background: #386de8; }
-        .feature-row[aria-pressed="true"] .switch::after { transform: translateX(14px); }
+        .switch { display: grid; place-items: center; width: 30px; height: 28px; border: 1px solid #dfe2e8; border-radius: 9px; background: #f0f1f4; color: #777c87; transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 180ms cubic-bezier(.23,1,.32,1); }
+        .switch svg { width: 18px; height: 18px; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.2; }
+        .switch path { transform-origin: center; transition: opacity 140ms ease, transform 180ms cubic-bezier(.23,1,.32,1); }
+        .switch-check { opacity: 0; transform: scale(.7) rotate(-12deg); }
+        .switch-off { opacity: 1; transform: scale(1) rotate(0); }
+        .feature-row[aria-pressed="true"] .switch { border-color: #386de8; background: #386de8; color: #fff; transform: rotate(0.001deg); }
+        .feature-row[aria-pressed="true"] .switch-check { opacity: 1; transform: scale(1) rotate(0); }
+        .feature-row[aria-pressed="true"] .switch-off { opacity: 0; transform: scale(.7) rotate(12deg); }
         @media (max-width: 370px) { .panel { right: 8px; width: calc(100vw - 16px); } }
-        @media (prefers-reduced-motion: reduce) { .backdrop, .panel, .switch, .switch::after { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .backdrop, .panel, .toggle-fill, .toggle-label, .segment-indicator, .switch, .switch path { transition-duration: 1ms; } }
       </style>
       <div class="backdrop" data-backdrop>
         <main class="panel" role="dialog" aria-modal="true" aria-label="AntiClip settings">
           <header class="topbar">
-            <img class="logo" src="${chrome.runtime.getURL("icons/logo.svg")}" alt="AntiClip" />
-            <button class="toggle" type="button" data-toggle aria-pressed="true">On</button>
+            <img class="logo" src="${logoUrl}" alt="AntiClip" />
+            <button class="toggle" type="button" data-toggle aria-pressed="true" aria-label="Turn AntiClip off">
+              <span class="toggle-fill"></span>
+              <span class="toggle-label toggle-label-on">On</span>
+              <span class="toggle-label toggle-label-off">Off</span>
+            </button>
           </header>
           <section class="group" aria-label="Playback speed">
             <div class="group-head"><span>Speed multiplier</span><span class="value" data-actual-rate>0.5x</span></div>
             <div class="segments" aria-label="Speed multiplier">
+              <span class="segment-indicator" aria-hidden="true"></span>
               <button type="button" data-multiplier="0.25">0.25</button>
               <button type="button" data-multiplier="0.5">0.5</button>
               <button type="button" data-multiplier="0.75">0.75</button>
@@ -210,7 +250,9 @@
       }
     });
 
-    panel?.querySelector<HTMLButtonElement>("[data-toggle]")?.addEventListener("click", () => {
+    const masterToggle = panel?.querySelector<HTMLButtonElement>("[data-toggle]");
+
+    masterToggle?.addEventListener("click", () => {
       save({ ...config, enabled: !config.enabled });
     });
 
@@ -240,15 +282,19 @@
     document.addEventListener("keydown", keyHandler, true);
     document.documentElement.append(host);
 
-    chrome.storage.sync.get(STORAGE_KEY, (items) => {
-      config = normalizeConfig(items[STORAGE_KEY]);
-      render();
-      window.requestAnimationFrame(() => {
-        if (host) {
-          host.dataset.open = "true";
-        }
+    try {
+      chrome.storage.sync.get(STORAGE_KEY, (items) => {
+        config = normalizeConfig(items[STORAGE_KEY]);
+        render();
+        window.requestAnimationFrame(() => {
+          if (host) {
+            host.dataset.open = "true";
+          }
+        });
       });
-    });
+    } catch {
+      closeOverlay();
+    }
   }
 
   chrome.runtime.onMessage.addListener((message) => {
