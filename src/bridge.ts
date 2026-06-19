@@ -3,6 +3,7 @@
     enabled: boolean;
     multiplier: number;
     hideRecommendations: boolean;
+    hideHomeRecommendations: boolean;
     hideComments: boolean;
     hideShorts: boolean;
     disableAutoplay: boolean;
@@ -17,10 +18,11 @@
   const DEFAULT_CONFIG: AntiClipConfig = {
     enabled: true,
     multiplier: 0.5,
-    hideRecommendations: true,
-    hideComments: true,
-    hideShorts: true,
-    disableAutoplay: true
+    hideRecommendations: false,
+    hideHomeRecommendations: false,
+    hideComments: false,
+    hideShorts: false,
+    disableAutoplay: false
   };
 
   const STORAGE_KEY = "anticlip-config";
@@ -46,6 +48,10 @@
         typeof partialConfig?.hideRecommendations === "boolean"
           ? partialConfig.hideRecommendations
           : DEFAULT_CONFIG.hideRecommendations,
+      hideHomeRecommendations:
+        typeof partialConfig?.hideHomeRecommendations === "boolean"
+          ? partialConfig.hideHomeRecommendations
+          : DEFAULT_CONFIG.hideHomeRecommendations,
       hideComments:
         typeof partialConfig?.hideComments === "boolean"
           ? partialConfig.hideComments

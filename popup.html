@@ -85,7 +85,7 @@
 
       <section class="related" aria-label="YouTube cleanup">
         <h2>YouTube cleanup</h2>
-        <button class="row feature-row" type="button" data-feature="hideRecommendations" aria-pressed="true">
+        <button class="row feature-row" type="button" data-feature="hideRecommendations" aria-pressed="false">
           <span class="dot">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M4 6h16" />
@@ -94,12 +94,27 @@
             </svg>
           </span>
           <div>
-            <strong>Recommendations</strong>
-            <small>Hide sidebar and home feed</small>
+            <strong>Watch recommendations</strong>
+            <small>Hide next-video sidebar</small>
           </div>
           <span class="switch" aria-hidden="true"></span>
         </button>
-        <button class="row feature-row" type="button" data-feature="hideComments" aria-pressed="true">
+        <button class="row feature-row" type="button" data-feature="hideHomeRecommendations" aria-pressed="false">
+          <span class="dot">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 5h7v6H4z" />
+              <path d="M13 5h7v6h-7z" />
+              <path d="M4 13h7v6H4z" />
+              <path d="M13 13h7v6h-7z" />
+            </svg>
+          </span>
+          <div>
+            <strong>Home feed</strong>
+            <small>Hide home recommendations</small>
+          </div>
+          <span class="switch" aria-hidden="true"></span>
+        </button>
+        <button class="row feature-row" type="button" data-feature="hideComments" aria-pressed="false">
           <span class="dot muted">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M5 6h14v10H8l-3 3V6Z" />
@@ -113,7 +128,7 @@
           </div>
           <span class="switch" aria-hidden="true"></span>
         </button>
-        <button class="row feature-row" type="button" data-feature="hideShorts" aria-pressed="true">
+        <button class="row feature-row" type="button" data-feature="hideShorts" aria-pressed="false">
           <span class="dot teal">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="m9 7 7 5-7 5V7Z" />
@@ -126,7 +141,7 @@
           </div>
           <span class="switch" aria-hidden="true"></span>
         </button>
-        <button class="row feature-row" type="button" data-feature="disableAutoplay" aria-pressed="true">
+        <button class="row feature-row" type="button" data-feature="disableAutoplay" aria-pressed="false">
           <span class="dot green">
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="M7 5v14" />

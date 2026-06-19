@@ -3,10 +3,11 @@
     const DEFAULT_CONFIG = {
         enabled: true,
         multiplier: 0.5,
-        hideRecommendations: true,
-        hideComments: true,
-        hideShorts: true,
-        disableAutoplay: true
+        hideRecommendations: false,
+        hideHomeRecommendations: false,
+        hideComments: false,
+        hideShorts: false,
+        disableAutoplay: false
     };
     const STORAGE_KEY = "anticlip-config";
     const toggle = document.querySelector("[data-toggle]");
@@ -31,6 +32,9 @@
             hideRecommendations: typeof partialConfig?.hideRecommendations === "boolean"
                 ? partialConfig.hideRecommendations
                 : DEFAULT_CONFIG.hideRecommendations,
+            hideHomeRecommendations: typeof partialConfig?.hideHomeRecommendations === "boolean"
+                ? partialConfig.hideHomeRecommendations
+                : DEFAULT_CONFIG.hideHomeRecommendations,
             hideComments: typeof partialConfig?.hideComments === "boolean"
                 ? partialConfig.hideComments
                 : DEFAULT_CONFIG.hideComments,

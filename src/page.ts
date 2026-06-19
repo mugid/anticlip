@@ -3,6 +3,7 @@
     enabled: boolean;
     multiplier: number;
     hideRecommendations: boolean;
+    hideHomeRecommendations: boolean;
     hideComments: boolean;
     hideShorts: boolean;
     disableAutoplay: boolean;
@@ -17,10 +18,11 @@
   const DEFAULT_CONFIG: AntiClipConfig = {
     enabled: true,
     multiplier: 0.5,
-    hideRecommendations: true,
-    hideComments: true,
-    hideShorts: true,
-    disableAutoplay: true
+    hideRecommendations: false,
+    hideHomeRecommendations: false,
+    hideComments: false,
+    hideShorts: false,
+    disableAutoplay: false
   };
 
   const PATCH_FLAG = "__anticlipPlaybackRatePatched__";
@@ -48,6 +50,8 @@
   const STYLE_ID = "anticlip-page-rules";
 
   let config: AntiClipConfig = { ...DEFAULT_CONFIG };
+  let lastRuleStyle = "";
+  let pageConfigFrame = 0;
 
   function clampMultiplier(value: number) {
     if (!Number.isFinite(value)) {
@@ -114,12 +118,15 @@
 
     if (config.hideRecommendations) {
       rules.push(`
-        ytd-watch-next-secondary-results-renderer,
-        ytd-watch-flexy #secondary,
-        ytd-rich-grid-renderer,
-        ytd-browse[page-subtype="home"] #contents,
-        ytd-item-section-renderer:has(ytd-compact-video-renderer),
-        ytd-rich-section-renderer {
+        ytd-watch-next-secondary-results-renderer {
+          display: none !important;
+        }
+      `);
+    }
+
+    if (config.hideHomeRecommendations) {
+      rules.push(`
+        ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
           display: none !important;
         }
       `);
@@ -147,8 +154,7 @@
         ytd-rich-item-renderer:has(a[href^="/shorts"]),
         ytd-video-renderer:has(a[href^="/shorts"]),
         ytd-grid-video-renderer:has(a[href^="/shorts"]),
-        ytd-compact-video-renderer:has(a[href^="/shorts"]),
-        a[href^="/shorts"] {
+        ytd-compact-video-renderer:has(a[href^="/shorts"]) {
           display: none !important;
         }
       `);
@@ -158,6 +164,14 @@
   }
 
   function applyPageRules() {
+    const nextRuleStyle = getRuleStyle();
+
+    if (nextRuleStyle === lastRuleStyle) {
+      return;
+    }
+
+    lastRuleStyle = nextRuleStyle;
+
     let style = document.getElementById(STYLE_ID);
 
     if (!style) {
@@ -166,7 +180,7 @@
       document.documentElement.append(style);
     }
 
-    style.textContent = getRuleStyle();
+    style.textContent = nextRuleStyle;
   }
 
   function disableAutoplayControl() {
@@ -185,6 +199,17 @@
     applyConfigToCurrentMedia();
     applyPageRules();
     disableAutoplayControl();
+  }
+
+  function schedulePageConfig() {
+    if (pageConfigFrame) {
+      return;
+    }
+
+    pageConfigFrame = window.requestAnimationFrame(() => {
+      pageConfigFrame = 0;
+      applyPageConfig();
+    });
   }
 
   Object.defineProperty(HTMLMediaElement.prototype, "playbackRate", {
@@ -238,19 +263,20 @@
       enabled: Boolean(message.config.enabled),
       multiplier: clampMultiplier(message.config.multiplier),
       hideRecommendations: Boolean(message.config.hideRecommendations),
+      hideHomeRecommendations: Boolean(message.config.hideHomeRecommendations),
       hideComments: Boolean(message.config.hideComments),
       hideShorts: Boolean(message.config.hideShorts),
       disableAutoplay: Boolean(message.config.disableAutoplay)
     };
 
-    applyPageConfig();
+    schedulePageConfig();
   });
 
-  new MutationObserver(applyPageConfig).observe(document.documentElement, {
+  new MutationObserver(schedulePageConfig).observe(document.documentElement, {
     childList: true,
     subtree: true
   });
 
-  window.addEventListener("yt-navigate-finish", applyPageConfig);
-  applyPageConfig();
+  window.addEventListener("yt-navigate-finish", schedulePageConfig);
+  schedulePageConfig();
 })();
