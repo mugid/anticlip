@@ -2,11 +2,16 @@
 (() => {
     const DEFAULT_CONFIG = {
         enabled: true,
-        multiplier: 0.5
+        multiplier: 0.5,
+        hideRecommendations: true,
+        hideComments: true,
+        hideShorts: true,
+        disableAutoplay: true
     };
     const STORAGE_KEY = "anticlip-config";
     const toggle = document.querySelector("[data-toggle]");
     const multiplierButtons = [...document.querySelectorAll("[data-multiplier]")];
+    const featureButtons = [...document.querySelectorAll("[data-feature]")];
     const actualRate = document.querySelector("[data-actual-rate]");
     const status = document.querySelector("[data-status]");
     let config = { ...DEFAULT_CONFIG };
@@ -22,7 +27,19 @@
             multiplier: typeof partialConfig?.multiplier === "number" &&
                 Number.isFinite(partialConfig.multiplier)
                 ? partialConfig.multiplier
-                : DEFAULT_CONFIG.multiplier
+                : DEFAULT_CONFIG.multiplier,
+            hideRecommendations: typeof partialConfig?.hideRecommendations === "boolean"
+                ? partialConfig.hideRecommendations
+                : DEFAULT_CONFIG.hideRecommendations,
+            hideComments: typeof partialConfig?.hideComments === "boolean"
+                ? partialConfig.hideComments
+                : DEFAULT_CONFIG.hideComments,
+            hideShorts: typeof partialConfig?.hideShorts === "boolean"
+                ? partialConfig.hideShorts
+                : DEFAULT_CONFIG.hideShorts,
+            disableAutoplay: typeof partialConfig?.disableAutoplay === "boolean"
+                ? partialConfig.disableAutoplay
+                : DEFAULT_CONFIG.disableAutoplay
         };
     }
     function saveConfig(nextConfig) {
@@ -45,6 +62,13 @@
             const isSelected = Number(button.dataset.multiplier) === config.multiplier;
             button.setAttribute("aria-pressed", String(isSelected));
         });
+        featureButtons.forEach((button) => {
+            const feature = button.dataset.feature;
+            if (!feature || typeof config[feature] !== "boolean") {
+                return;
+            }
+            button.setAttribute("aria-pressed", String(config[feature]));
+        });
     }
     toggle?.addEventListener("click", () => {
         saveConfig({ ...config, enabled: !config.enabled });
@@ -56,6 +80,15 @@
                 return;
             }
             saveConfig({ ...config, multiplier });
+        });
+    });
+    featureButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const feature = button.dataset.feature;
+            if (!feature || typeof config[feature] !== "boolean") {
+                return;
+            }
+            saveConfig({ ...config, [feature]: !config[feature] });
         });
     });
     chrome.storage.sync.get(STORAGE_KEY, (items) => {

@@ -2,17 +2,26 @@
   type AntiClipConfig = {
     enabled: boolean;
     multiplier: number;
+    hideRecommendations: boolean;
+    hideComments: boolean;
+    hideShorts: boolean;
+    disableAutoplay: boolean;
   };
 
   const DEFAULT_CONFIG: AntiClipConfig = {
     enabled: true,
-    multiplier: 0.5
+    multiplier: 0.5,
+    hideRecommendations: true,
+    hideComments: true,
+    hideShorts: true,
+    disableAutoplay: true
   };
 
   const STORAGE_KEY = "anticlip-config";
 
   const toggle = document.querySelector<HTMLButtonElement>("[data-toggle]");
   const multiplierButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-multiplier]")];
+  const featureButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-feature]")];
   const actualRate = document.querySelector<HTMLElement>("[data-actual-rate]");
   const status = document.querySelector<HTMLElement>("[data-status]");
 
@@ -34,7 +43,23 @@
         typeof partialConfig?.multiplier === "number" &&
         Number.isFinite(partialConfig.multiplier)
           ? partialConfig.multiplier
-          : DEFAULT_CONFIG.multiplier
+          : DEFAULT_CONFIG.multiplier,
+      hideRecommendations:
+        typeof partialConfig?.hideRecommendations === "boolean"
+          ? partialConfig.hideRecommendations
+          : DEFAULT_CONFIG.hideRecommendations,
+      hideComments:
+        typeof partialConfig?.hideComments === "boolean"
+          ? partialConfig.hideComments
+          : DEFAULT_CONFIG.hideComments,
+      hideShorts:
+        typeof partialConfig?.hideShorts === "boolean"
+          ? partialConfig.hideShorts
+          : DEFAULT_CONFIG.hideShorts,
+      disableAutoplay:
+        typeof partialConfig?.disableAutoplay === "boolean"
+          ? partialConfig.disableAutoplay
+          : DEFAULT_CONFIG.disableAutoplay
     };
   }
 
@@ -63,6 +88,16 @@
       const isSelected = Number(button.dataset.multiplier) === config.multiplier;
       button.setAttribute("aria-pressed", String(isSelected));
     });
+
+    featureButtons.forEach((button) => {
+      const feature = button.dataset.feature as keyof AntiClipConfig | undefined;
+
+      if (!feature || typeof config[feature] !== "boolean") {
+        return;
+      }
+
+      button.setAttribute("aria-pressed", String(config[feature]));
+    });
   }
 
   toggle?.addEventListener("click", () => {
@@ -78,6 +113,18 @@
       }
 
       saveConfig({ ...config, multiplier });
+    });
+  });
+
+  featureButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const feature = button.dataset.feature as keyof AntiClipConfig | undefined;
+
+      if (!feature || typeof config[feature] !== "boolean") {
+        return;
+      }
+
+      saveConfig({ ...config, [feature]: !config[feature] });
     });
   });
 

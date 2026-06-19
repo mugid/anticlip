@@ -2,7 +2,11 @@
 (() => {
     const DEFAULT_CONFIG = {
         enabled: true,
-        multiplier: 0.5
+        multiplier: 0.5,
+        hideRecommendations: true,
+        hideComments: true,
+        hideShorts: true,
+        disableAutoplay: true
     };
     const PATCH_FLAG = "__anticlipPlaybackRatePatched__";
     const globalWindow = window;
@@ -18,6 +22,7 @@
     const nativeSet = descriptor.set;
     const visibleRates = new WeakMap();
     const internalRateChanges = new WeakMap();
+    const STYLE_ID = "anticlip-page-rules";
     let config = { ...DEFAULT_CONFIG };
     function clampMultiplier(value) {
         if (!Number.isFinite(value)) {
@@ -50,12 +55,83 @@
     function applyConfigToCurrentMedia() {
         document.querySelectorAll("video, audio").forEach((element) => {
             if (element instanceof HTMLMediaElement) {
+                if (config.enabled && config.disableAutoplay) {
+                    element.autoplay = false;
+                    element.removeAttribute("autoplay");
+                }
                 if (!visibleRates.has(element)) {
                     visibleRates.set(element, nativeGet.call(element));
                 }
                 setNativeRate(element, getVisibleRate(element));
             }
         });
+    }
+    function getRuleStyle() {
+        if (!config.enabled) {
+            return "";
+        }
+        const rules = [];
+        if (config.hideRecommendations) {
+            rules.push(`
+        ytd-watch-next-secondary-results-renderer,
+        ytd-watch-flexy #secondary,
+        ytd-rich-grid-renderer,
+        ytd-browse[page-subtype="home"] #contents,
+        ytd-item-section-renderer:has(ytd-compact-video-renderer),
+        ytd-rich-section-renderer {
+          display: none !important;
+        }
+      `);
+        }
+        if (config.hideComments) {
+            rules.push(`
+        ytd-comments,
+        ytd-comments-header-renderer,
+        ytd-comment-thread-renderer,
+        ytd-watch-flexy #comments,
+        #comments {
+          display: none !important;
+        }
+      `);
+        }
+        if (config.hideShorts) {
+            rules.push(`
+        ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+        ytd-guide-entry-renderer:has(a[href^="/shorts"]),
+        ytd-reel-shelf-renderer,
+        ytd-rich-shelf-renderer[is-shorts],
+        ytd-rich-section-renderer:has(a[href^="/shorts"]),
+        ytd-rich-item-renderer:has(a[href^="/shorts"]),
+        ytd-video-renderer:has(a[href^="/shorts"]),
+        ytd-grid-video-renderer:has(a[href^="/shorts"]),
+        ytd-compact-video-renderer:has(a[href^="/shorts"]),
+        a[href^="/shorts"] {
+          display: none !important;
+        }
+      `);
+        }
+        return rules.join("\n");
+    }
+    function applyPageRules() {
+        let style = document.getElementById(STYLE_ID);
+        if (!style) {
+            style = document.createElement("style");
+            style.id = STYLE_ID;
+            document.documentElement.append(style);
+        }
+        style.textContent = getRuleStyle();
+    }
+    function disableAutoplayControl() {
+        if (!config.enabled || !config.disableAutoplay) {
+            return;
+        }
+        const toggle = document.querySelector(".ytp-autonav-toggle-button[aria-checked='true'], .ytp-autonav-toggle-button[aria-pressed='true']");
+        toggle?.click();
+    }
+    function applyPageConfig() {
+        applyConfigToCurrentMedia();
+        applyPageRules();
+        disableAutoplayControl();
     }
     Object.defineProperty(HTMLMediaElement.prototype, "playbackRate", {
         configurable: true,
@@ -92,14 +168,18 @@
         }
         config = {
             enabled: Boolean(message.config.enabled),
-            multiplier: clampMultiplier(message.config.multiplier)
+            multiplier: clampMultiplier(message.config.multiplier),
+            hideRecommendations: Boolean(message.config.hideRecommendations),
+            hideComments: Boolean(message.config.hideComments),
+            hideShorts: Boolean(message.config.hideShorts),
+            disableAutoplay: Boolean(message.config.disableAutoplay)
         };
-        applyConfigToCurrentMedia();
+        applyPageConfig();
     });
-    new MutationObserver(applyConfigToCurrentMedia).observe(document.documentElement, {
+    new MutationObserver(applyPageConfig).observe(document.documentElement, {
         childList: true,
         subtree: true
     });
-    window.addEventListener("yt-navigate-finish", applyConfigToCurrentMedia);
-    applyConfigToCurrentMedia();
+    window.addEventListener("yt-navigate-finish", applyPageConfig);
+    applyPageConfig();
 })();

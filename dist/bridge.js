@@ -2,7 +2,11 @@
 (() => {
     const DEFAULT_CONFIG = {
         enabled: true,
-        multiplier: 0.5
+        multiplier: 0.5,
+        hideRecommendations: true,
+        hideComments: true,
+        hideShorts: true,
+        disableAutoplay: true
     };
     const STORAGE_KEY = "anticlip-config";
     function isConfigShape(value) {
@@ -17,7 +21,19 @@
             multiplier: typeof partialConfig?.multiplier === "number" &&
                 Number.isFinite(partialConfig.multiplier)
                 ? partialConfig.multiplier
-                : DEFAULT_CONFIG.multiplier
+                : DEFAULT_CONFIG.multiplier,
+            hideRecommendations: typeof partialConfig?.hideRecommendations === "boolean"
+                ? partialConfig.hideRecommendations
+                : DEFAULT_CONFIG.hideRecommendations,
+            hideComments: typeof partialConfig?.hideComments === "boolean"
+                ? partialConfig.hideComments
+                : DEFAULT_CONFIG.hideComments,
+            hideShorts: typeof partialConfig?.hideShorts === "boolean"
+                ? partialConfig.hideShorts
+                : DEFAULT_CONFIG.hideShorts,
+            disableAutoplay: typeof partialConfig?.disableAutoplay === "boolean"
+                ? partialConfig.disableAutoplay
+                : DEFAULT_CONFIG.disableAutoplay
         };
     }
     function postConfig(config) {
