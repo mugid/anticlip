@@ -42,7 +42,7 @@
     return {
       enabled: typeof partial.enabled === "boolean" ? partial.enabled : DEFAULT_CONFIG.enabled,
       multiplier: typeof partial.multiplier === "number" && Number.isFinite(partial.multiplier)
-        ? partial.multiplier
+        ? Math.round(Math.min(Math.max(partial.multiplier, 0.1), 1) * 20) / 20
         : DEFAULT_CONFIG.multiplier,
       hideRecommendations: typeof partial.hideRecommendations === "boolean"
         ? partial.hideRecommendations
@@ -69,7 +69,8 @@
 
     const masterToggle = panel.querySelector<HTMLButtonElement>("[data-toggle]");
     const rate = panel.querySelector<HTMLElement>("[data-actual-rate]");
-    const segments = panel.querySelector<HTMLElement>(".segments");
+    const selector = panel.querySelector<HTMLElement>(".speed-selector");
+    const multiplierInput = panel.querySelector<HTMLInputElement>("[data-multiplier-input]");
 
     if (masterToggle) {
       masterToggle.setAttribute("aria-pressed", String(config.enabled));
@@ -80,15 +81,11 @@
       rate.textContent = `${config.multiplier}x`;
     }
 
-    panel.querySelectorAll<HTMLButtonElement>("[data-multiplier]").forEach((button) => {
-      button.setAttribute(
-        "aria-pressed",
-        String(Number(button.dataset.multiplier) === config.multiplier)
-      );
-    });
-
-    const multiplierIndex = [0.25, 0.5, 0.75, 1].indexOf(config.multiplier);
-    segments?.style.setProperty("--selected-index", String(Math.max(multiplierIndex, 0)));
+    const selectorProgress = (config.multiplier - 0.1) / 0.9;
+    selector?.style.setProperty("--selector-progress", String(selectorProgress));
+    if (multiplierInput) {
+      multiplierInput.value = String(config.multiplier);
+    }
 
     panel.querySelectorAll<HTMLButtonElement>("[data-feature]").forEach((button) => {
       const feature = button.dataset.feature as keyof AntiClipConfig;
@@ -189,15 +186,28 @@
         .toggle-label-off { color: #6d7078; opacity: 0; transform: translateY(-5px); filter: blur(2px); }
         .toggle[aria-pressed="false"] .toggle-label-on { opacity: 0; transform: translateY(5px); filter: blur(2px); }
         .toggle[aria-pressed="false"] .toggle-label-off { opacity: 1; transform: translateY(0); filter: none; }
-        .group { padding: 12px; border: 1px solid #e4e6eb; border-radius: 20px; background: #fbfbfc; }
-        .group + .group { margin-top: 10px; }
+        .group { padding: 0; border: 0; border-radius: 0; background: transparent; }
+        .group + .group { margin-top: 24px; }
         .group-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: #6d7078; font-size: 13px; font-weight: 500; }
         .value { color: #245bd8; font-weight: 600; }
-        .segments { --selected-index: 1; position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-        .segment-indicator { position: absolute; z-index: -1; top: 0; left: 0; width: calc((100% - 21px) / 4); height: 36px; border-radius: 12px; background: #386de8; box-shadow: 0 8px 16px rgb(56 109 232 / 22%); transform: translateX(calc(var(--selected-index) * (100% + 7px))); transition: transform 220ms cubic-bezier(.77,0,.175,1); }
-        .segments button { position: relative; height: 36px; border: 1px solid #e4e6eb; border-radius: 12px; background: transparent; color: #555963; cursor: pointer; font-size: 14px; font-weight: 500; transition: color 150ms ease, border-color 150ms ease, transform 120ms cubic-bezier(.23,1,.32,1); }
-        .segments button:active { transform: scale(.96); }
-        .segments button[aria-pressed="true"] { border-color: transparent; color: #fff; }
+        .speed-selector { --selector-progress: .5; position: relative; }
+        .selector-rail { position: absolute; top: 0; left: 0; right: 0; height: 32px; overflow: hidden; border-radius: 11px; background: #e9ebf0; }
+        .selector-fill { position: absolute; inset: 0; border-radius: inherit; background: #386de8; transform: scaleX(var(--selector-progress)); transform-origin: left center; }
+        .selector-stop { position: absolute; z-index: 1; top: 50%; width: 1px; height: 12px; background: rgb(23 24 28 / 22%); transform: translate(-50%, -50%); }
+        .selector-stop-25 { left: 16.6667%; }
+        .selector-stop-50 { left: 44.4444%; }
+        .selector-stop-75 { left: 72.2222%; }
+        .selector-input { position: relative; z-index: 2; display: block; width: 100%; height: 32px; margin: 0; appearance: none; background: transparent; cursor: ew-resize; }
+        .selector-input::-webkit-slider-runnable-track { height: 32px; background: transparent; }
+        .selector-input::-webkit-slider-thumb { width: 4px; height: 24px; margin-top: 4px; appearance: none; border: 0; border-radius: 3px; background: #fff; box-shadow: 0 1px 4px rgb(17 20 28 / 32%); }
+        .selector-input:focus-visible { outline: 2px solid #386de8; outline-offset: 5px; border-radius: 999px; }
+        .selector-labels { position: relative; height: 15px; margin: 7px 7px 0; color: #777b84; font-size: 11px; font-variant-numeric: tabular-nums; }
+        .selector-labels span { position: absolute; transform: translateX(-50%); }
+        .selector-labels .label-min { left: 0; transform: none; }
+        .selector-labels .label-25 { left: 16.6667%; }
+        .selector-labels .label-50 { left: 44.4444%; }
+        .selector-labels .label-75 { left: 72.2222%; }
+        .selector-labels .label-max { right: 0; transform: none; }
         .row { display: grid; grid-template-columns: 28px 1fr 32px; gap: 10px; align-items: center; width: 100%; height: 42px; padding: 0; border: 0; border-radius: 13px; background: transparent; color: inherit; text-align: left; cursor: pointer; transition: transform 120ms cubic-bezier(.23,1,.32,1); }
         .row:active { transform: scale(.985); }
         .row + .row { margin-top: 3px; }
@@ -214,7 +224,7 @@
         .feature-row[aria-pressed="true"] .switch-check { opacity: 1; transform: scale(1) rotate(0); }
         .feature-row[aria-pressed="true"] .switch-off { opacity: 0; transform: scale(.7) rotate(12deg); }
         @media (max-width: 370px) { .panel { right: 8px; width: calc(100vw - 16px); } }
-        @media (prefers-reduced-motion: reduce) { .backdrop, .panel, .toggle-fill, .toggle-label, .segment-indicator, .switch, .switch path { transition-duration: 1ms; } }
+        @media (prefers-reduced-motion: reduce) { .backdrop, .panel, .toggle-fill, .toggle-label, .switch, .switch path { transition-duration: 1ms; } }
       </style>
       <div class="backdrop" data-backdrop>
         <main class="panel" role="dialog" aria-modal="true" aria-label="AntiClip settings">
@@ -228,12 +238,17 @@
           </header>
           <section class="group" aria-label="Playback speed">
             <div class="group-head"><span>Speed multiplier</span><span class="value" data-actual-rate>0.5x</span></div>
-            <div class="segments" aria-label="Speed multiplier">
-              <span class="segment-indicator" aria-hidden="true"></span>
-              <button type="button" data-multiplier="0.25">0.25</button>
-              <button type="button" data-multiplier="0.5">0.5</button>
-              <button type="button" data-multiplier="0.75">0.75</button>
-              <button type="button" data-multiplier="1">1</button>
+            <div class="speed-selector">
+              <span class="selector-rail" aria-hidden="true">
+                <span class="selector-fill"></span>
+                <span class="selector-stop selector-stop-25"></span>
+                <span class="selector-stop selector-stop-50"></span>
+                <span class="selector-stop selector-stop-75"></span>
+              </span>
+              <input class="selector-input" data-multiplier-input type="range" min="0.1" max="1" step="0.05" value="0.5" aria-label="Speed multiplier" />
+              <div class="selector-labels" aria-hidden="true">
+                <span class="label-min">0.1</span><span class="label-25">0.25</span><span class="label-50">0.5</span><span class="label-75">0.75</span><span class="label-max">1</span>
+              </div>
             </div>
           </section>
           <section class="group" aria-label="YouTube cleanup">${buildFeatureRows()}</section>
@@ -256,13 +271,11 @@
       save({ ...config, enabled: !config.enabled });
     });
 
-    panel?.querySelectorAll<HTMLButtonElement>("[data-multiplier]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const multiplier = Number(button.dataset.multiplier);
-        if (Number.isFinite(multiplier)) {
-          save({ ...config, multiplier });
-        }
-      });
+    panel?.querySelector<HTMLInputElement>("[data-multiplier-input]")?.addEventListener("input", (event) => {
+      const multiplier = Math.round(Number((event.currentTarget as HTMLInputElement).value) * 20) / 20;
+      if (Number.isFinite(multiplier) && multiplier >= 0.1 && multiplier <= 1) {
+        save({ ...config, multiplier });
+      }
     });
 
     panel?.querySelectorAll<HTMLButtonElement>("[data-feature]").forEach((button) => {
@@ -284,8 +297,13 @@
 
     try {
       chrome.storage.sync.get(STORAGE_KEY, (items) => {
-        config = normalizeConfig(items[STORAGE_KEY]);
-        render();
+        const storedConfig = items[STORAGE_KEY] as Partial<AntiClipConfig> | undefined;
+        config = normalizeConfig(storedConfig);
+        if (storedConfig?.multiplier !== config.multiplier) {
+          save(config);
+        } else {
+          render();
+        }
         window.requestAnimationFrame(() => {
           if (host) {
             host.dataset.open = "true";
