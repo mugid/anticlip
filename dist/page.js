@@ -1,8 +1,9 @@
-const DEFAULT_CONFIG = {
-    enabled: true,
-    multiplier: 0.5
-};
+"use strict";
 (() => {
+    const DEFAULT_CONFIG = {
+        enabled: true,
+        multiplier: 0.5
+    };
     const PATCH_FLAG = "__anticlipPlaybackRatePatched__";
     const globalWindow = window;
     if (globalWindow[PATCH_FLAG]) {
