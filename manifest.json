@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "AntiClip",
+  "version": "0.1.0",
+  "description": "Runs YouTube videos at a real half-speed while keeping YouTube's speed UI intact.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.youtube.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["dist/page.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["dist/bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "AntiClip",
+    "default_popup": "popup.html"
+  }
+}

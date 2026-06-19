@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AntiClip</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="icons/icon.svg" alt="" class="brand-icon" />
+          <span>AntiClip</span>
+        </div>
+        <button class="toggle" type="button" data-toggle aria-pressed="true">On</button>
+      </header>
+
+      <section class="search" aria-label="Current rule">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m21 21-4.34-4.34" />
+          <circle cx="11" cy="11" r="7" />
+        </svg>
+        <span>youtube.com</span>
+      </section>
+
+      <section class="card">
+        <div class="suggestion">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M12 3l1.2 5.1L18 10l-4.8 1.9L12 17l-1.2-5.1L6 10l4.8-1.9L12 3Z" />
+            <path d="M5 14l.6 2.4L8 17l-2.4.6L5 20l-.6-2.4L2 17l2.4-.6L5 14Z" />
+          </svg>
+          <span>Playback rule</span>
+        </div>
+
+        <div class="profile">
+          <div class="avatar">½</div>
+          <div>
+            <h1>Half-speed layer</h1>
+            <p data-status>Active on YouTube</p>
+          </div>
+        </div>
+
+        <dl class="details">
+          <div>
+            <dt>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 6h16v12H4z" />
+                <path d="m4 8 8 5 8-5" />
+              </svg>
+              YouTube shows
+            </dt>
+            <dd>unchanged</dd>
+          </div>
+          <div>
+            <dt>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 12h16" />
+                <path d="M12 4v16" />
+                <path d="M7 7h10v10H7z" />
+              </svg>
+              Real speed
+            </dt>
+            <dd><span class="pill" data-actual-rate>0.5x</span></dd>
+          </div>
+          <div>
+            <dt>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8" />
+                <path d="M12 8v5l3 2" />
+              </svg>
+              Example
+            </dt>
+            <dd>2x becomes 1x</dd>
+          </div>
+        </dl>
+
+        <div class="segments" aria-label="Speed multiplier">
+          <button type="button" data-multiplier="0.25">¼</button>
+          <button type="button" data-multiplier="0.5" aria-pressed="true">½</button>
+          <button type="button" data-multiplier="0.75">¾</button>
+          <button type="button" data-multiplier="1">1</button>
+        </div>
+      </section>
+
+      <section class="related" aria-label="Examples">
+        <h2>Perceived speed</h2>
+        <div class="row">
+          <span class="dot">2×</span>
+          <div>
+            <strong>YouTube player</strong>
+            <small>Real playback becomes 1×</small>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="row">
+          <span class="dot muted">1×</span>
+          <div>
+            <strong>YouTube player</strong>
+            <small>Real playback becomes 0.5×</small>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+      </section>
+    </main>
+    <script src="dist/popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "anticlip",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Chrome extension that makes YouTube playback feel half-speed without changing YouTube's visible player speed.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
