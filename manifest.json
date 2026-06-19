@@ -14,12 +14,20 @@
     },
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["dist/bridge.js"],
+      "js": ["dist/bridge.js", "dist/overlay.js"],
       "run_at": "document_start"
     }
   ],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
   "action": {
-    "default_title": "AntiClip",
-    "default_popup": "popup.html"
-  }
+    "default_title": "Open AntiClip"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/logo.svg"],
+      "matches": ["https://www.youtube.com/*"]
+    }
+  ]
 }
