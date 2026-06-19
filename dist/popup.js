@@ -8,11 +8,18 @@ const multiplierButtons = [...document.querySelectorAll("[data-multiplier]")];
 const actualRate = document.querySelector("[data-actual-rate]");
 const status = document.querySelector("[data-status]");
 let config = { ...DEFAULT_CONFIG };
+function isConfigShape(value) {
+    return typeof value === "object" && value !== null;
+}
 function normalizeConfig(value) {
+    const partialConfig = isConfigShape(value) ? value : undefined;
     return {
-        enabled: typeof value?.enabled === "boolean" ? value.enabled : DEFAULT_CONFIG.enabled,
-        multiplier: typeof value?.multiplier === "number" && Number.isFinite(value.multiplier)
-            ? value.multiplier
+        enabled: typeof partialConfig?.enabled === "boolean"
+            ? partialConfig.enabled
+            : DEFAULT_CONFIG.enabled,
+        multiplier: typeof partialConfig?.multiplier === "number" &&
+            Number.isFinite(partialConfig.multiplier)
+            ? partialConfig.multiplier
             : DEFAULT_CONFIG.multiplier
     };
 }

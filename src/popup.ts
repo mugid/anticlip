@@ -18,12 +18,22 @@
 
   let config: AntiClipConfig = { ...DEFAULT_CONFIG };
 
-  function normalizeConfig(value: Partial<AntiClipConfig> | undefined): AntiClipConfig {
+  function isConfigShape(value: unknown): value is Partial<AntiClipConfig> {
+    return typeof value === "object" && value !== null;
+  }
+
+  function normalizeConfig(value: unknown): AntiClipConfig {
+    const partialConfig = isConfigShape(value) ? value : undefined;
+
     return {
-      enabled: typeof value?.enabled === "boolean" ? value.enabled : DEFAULT_CONFIG.enabled,
+      enabled:
+        typeof partialConfig?.enabled === "boolean"
+          ? partialConfig.enabled
+          : DEFAULT_CONFIG.enabled,
       multiplier:
-        typeof value?.multiplier === "number" && Number.isFinite(value.multiplier)
-          ? value.multiplier
+        typeof partialConfig?.multiplier === "number" &&
+        Number.isFinite(partialConfig.multiplier)
+          ? partialConfig.multiplier
           : DEFAULT_CONFIG.multiplier
     };
   }

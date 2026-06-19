@@ -3,11 +3,18 @@ const DEFAULT_CONFIG = {
     multiplier: 0.5
 };
 const STORAGE_KEY = "anticlip-config";
+function isConfigShape(value) {
+    return typeof value === "object" && value !== null;
+}
 function normalizeConfig(value) {
+    const partialConfig = isConfigShape(value) ? value : undefined;
     return {
-        enabled: typeof value?.enabled === "boolean" ? value.enabled : DEFAULT_CONFIG.enabled,
-        multiplier: typeof value?.multiplier === "number" && Number.isFinite(value.multiplier)
-            ? value.multiplier
+        enabled: typeof partialConfig?.enabled === "boolean"
+            ? partialConfig.enabled
+            : DEFAULT_CONFIG.enabled,
+        multiplier: typeof partialConfig?.multiplier === "number" &&
+            Number.isFinite(partialConfig.multiplier)
+            ? partialConfig.multiplier
             : DEFAULT_CONFIG.multiplier
     };
 }
